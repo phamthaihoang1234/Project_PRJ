@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,22 +22,24 @@ import java.util.logging.Logger;
  */
 public class DAOProduct extends DBContext {
 
-    private static final String INSERT_PRODUCTS_SQL = "INSERT INTO Product" + "  (pid,pname,quantity,price,image,description,status,cateID) VALUES "
-            + " (?, ?, ?, ?, ?, ?, ?, ?);";
+    private static final String INSERT_PRODUCTS_SQL = "INSERT INTO Product" + "  (pid,pname,quantity,price,image,description,status,cateID,paths) VALUES "
+            + " (?, ?, ?, ?, ?, ?, ?, ?,?);";
     private static final String SELECT_PRODUCT_BY_ID = "select * from Product where pid =?";
     private static final String SELECT_PRODUCT_BY_PNAME = "select * from Product where pname LIKE ? ";
     private static final String SELECT_PRODUCT_BY_PNAME_AND_SORT_ASC = "select * from Product where pname LIKE ? ORDER BY price asc  ";
     private static final String SELECT_PRODUCT_BY_SORT_ASC = "select * from Product ORDER BY price asc ";
     private static final String SELECT_PRODUCT_BY_PNAME_AND_SORT_DESC = "select * from Product where pname LIKE ? ORDER BY price desc ";
     private static final String SELECT_PRODUCT_BY_SORT_DEC = "select * from Product ORDER BY price desc ";
-    private static final String SELECT_ALL_PRODUCTS = "select * from Product";
+    private static final String SELECT_ALL_PRODUCTS = "select * from Product ORDER BY pid ASC";
     private static final String DELETE_PRODUCT_SQL = "delete from Product where pid = ?;";
-    private static final String UPDATE_PRODUCT_SQL = "update Product set pname = ?,quantity= ?, price =? , image = ?, description = ?, status = ? , cateID = ?   where pid = ?;";
-
+    private static final String UPDATE_PRODUCT_SQL = "update Product set pname = ?,quantity= ?, price =? , image = ?, description = ?, status = ? , cateID = ?, paths = ?   where pid = ?;";
+    private static final String SEARCH_PRODUCT_BY_NAME = "select * from Product where [pname] like ?";
     public int insertProduct(Product pro) {
         Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         int n = 0;
-        String sql = "insert into Product(pid,pname,quantity,price,image,description,status,cateID) "
+        String sql = "insert into Product(pid,pname,quantity,price,image,description,status,cateID,paths) "
                 + "values('" + pro.getPid() + "','" + pro.getPname() + "'," + pro.getQuantity()
                 + "," + pro.getPrice() + ",'" + pro.getImage() + "','" + pro.getDescription() + "'," + pro.getStatus() + ","
                 + pro.getCateID() + ")";
@@ -44,12 +47,31 @@ public class DAOProduct extends DBContext {
         try {
             //Statemetn
             conn = new DBContext().getConnection();
-            Statement state = conn.createStatement();
-            n = state.executeUpdate(sql);
+            ps = conn.prepareStatement(INSERT_PRODUCTS_SQL);
+            ps.setString(1, pro.getPid());
+            ps.setString(2, pro.getPname());
+            ps.setInt(3, pro.getQuantity());
+            ps.setDouble(4, pro.getPrice());
+            ps.setString(5, pro.getImage());
+            ps.setString(6, pro.getDescription());
+            ps.setInt(7, pro.getStatus());
+            ps.setInt(8, pro.getCateID());
+            ps.setString(9, pro.getPath());
+
+            ps.executeUpdate();
         } catch (Exception ex) {
             Logger.getLogger(DAOProduct.class.getName()).log(Level.SEVERE, null, ex);
         }
         return n;
+    }
+    
+    public Product searchProById(List<Product> list , String id){
+        for (Product p : list) {
+            if(p.getPid().equals(id)){
+                return p;
+            }
+        }
+        return null;
     }
 
     public int deleteProduct(String pid) throws SQLException {
@@ -113,8 +135,37 @@ public class DAOProduct extends DBContext {
                         rs.getString(6),
                         rs.getInt(7),
                         rs.getInt(8)
+                       
                 ));
             }
+
+        } catch (Exception ex) {
+            Logger.getLogger(DAOProduct.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    public List<Product> searchProductByName(String txt) {
+        ArrayList<Product> arr = new ArrayList<Product>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(SEARCH_PRODUCT_BY_NAME);
+            ps.setString(1, "%" + txt + "%");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+
+                String pid = rs.getString(1), pname = rs.getString(2); // "pname"
+                int quantity = rs.getInt(3);
+                double price = rs.getDouble(4);
+                String image = rs.getString(5), description = rs.getString(6);
+                int status = rs.getInt(7), cateID = rs.getInt(8);
+                Product pro = new Product(pid, pname, quantity, price, image, description, status, cateID);
+                arr.add(pro);
+
+            }
+            return arr;
 
         } catch (Exception ex) {
             Logger.getLogger(DAOProduct.class.getName()).log(Level.SEVERE, null, ex);
@@ -247,6 +298,36 @@ public class DAOProduct extends DBContext {
         }
         return arr;
     }
+    
+    public ArrayList<Product> getAllByCateId(String id) {
+        ArrayList<Product> arr = new ArrayList<Product>();
+        String sql = "select * from Product where cateID=?";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, id);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+
+                String pid = rs.getString(1), pname = rs.getString(2); // "pname"
+                int quantity = rs.getInt(3);
+                double price = rs.getDouble(4);
+                String image = rs.getString(5), description = rs.getString(6);
+                int status = rs.getInt(7), cateID = rs.getInt(8);
+                Product pro = new Product(pid, pname, quantity, price, image, description, status, cateID);
+                arr.add(pro);
+
+            }
+            return arr;
+        } catch (Exception ex) {
+            Logger.getLogger(DAOProduct.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return arr;
+    }
 
     public ResultSet getAll() {
         ArrayList<Product> arr = new ArrayList<Product>();
@@ -277,24 +358,39 @@ public class DAOProduct extends DBContext {
         return rs;
     }
 
-    public int updateProduct(Product product) throws SQLException {
-        int rowUpdated;
-        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement(UPDATE_PRODUCT_SQL);) {
-            statement.setString(1, product.getPname());
-            statement.setInt(2, product.getQuantity());
-            statement.setDouble(3, product.getPrice());
-            statement.setString(4, product.getImage());
-            statement.setString(5, product.getDescription());
-            statement.setInt(6, product.getStatus());
-            statement.setInt(7, product.getCateID());
-            statement.setString(8, product.getPid());
-
-            rowUpdated = statement.executeUpdate();
-            return rowUpdated;
+    public void updateProduct(Product pro) throws SQLException {
+        
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try  {
+             conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(UPDATE_PRODUCT_SQL);
+            System.out.println(pro.getPid());
+            System.out.println(pro.getPname());
+            System.out.println(pro.getQuantity());
+            System.out.println(pro.getPrice());
+            System.out.println(pro.getImage());
+            System.out.println(pro.getDescription());
+            System.out.println(pro.getStatus());
+            System.out.println(pro.getCateID());
+            System.out.println(pro.getPath());
+//            exxcutr
+            ps.setString(1, pro.getPname());
+            ps.setInt(2, pro.getQuantity());
+            ps.setDouble(3, pro.getPrice());
+            ps.setString(4, pro.getImage());
+            ps.setString(5, pro.getDescription());
+            ps.setInt(6, pro.getStatus());
+            ps.setInt(7, pro.getCateID());
+            ps.setString(8, "haha");
+            ps.setString(9, pro.getPid());
+            ps.executeUpdate();
+           
         } catch (Exception ex) {
             Logger.getLogger(DAOProduct.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return 0;
+       
     }
 
     public static void main(String[] args) {

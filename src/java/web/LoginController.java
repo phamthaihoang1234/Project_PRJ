@@ -5,6 +5,7 @@
  */
 package web;
 
+import dao.DAOAmin;
 import dao.DAOCustomer;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import model.Admin;
 import model.Customer;
 
 /**
@@ -74,42 +76,104 @@ public class LoginController extends HttpServlet {
                 break;
         }
     }
-     protected void doPost(HttpServletRequest request, HttpServletResponse response)
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         doGet(request, response);
 
     }
+    int home = 0;
 
     private void showFormLogin(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        if (request.getParameter("home") != null) {
+            home = Integer.parseInt(request.getParameter("home"));
+        } else {
+            home = 0;
+        }
 
-//        RequestDispatcher dispatcher = request.getRequestDispatcher("/login-form.jsp");
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/newjsp.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/Login.jsp");
         dispatcher.forward(request, response);
     }
 
     private void loginCus(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        DAOAmin daoAdmin = new DAOAmin();
 
         DAOCustomer daoCus = new DAOCustomer();
         String username = request.getParameter("username");
         String password = request.getParameter("password");
+
         Customer cus = daoCus.loginCustomer(username, password);
+        Admin ad = daoAdmin.loginAdmin(username, password);
+        
         String message = "";
+        if (cus != null || ad != null) {
 
-        if (cus != null) {
-            request.getSession().setAttribute("auth", cus);
-            request.setAttribute("auth", cus);
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/product/product-cart.jsp");
-            dispatcher.forward(request, response);
+            if (cus != null) {
+                if (cus.getStatus() == 1) {
+                    request.getSession().setAttribute("auth", cus);
+                    request.setAttribute("auth", cus);
+                    if (home == 1) {
+                        response.sendRedirect("uploadFileServlet");
+                    } else {
+                        response.sendRedirect("uploadFileServlet?action=viewCart");
+                    }
+                } else {
+                    request.setAttribute("message", "This account blocked!");
+                    RequestDispatcher dispatcher = request.getRequestDispatcher("/Login.jsp");
+                    dispatcher.forward(request, response);
+                }
+            }
+
+            if (ad != null) {
+                request.getSession().setAttribute("auth", ad);
+                request.setAttribute("auth", ad);
+                if (home == 1) {
+                    response.sendRedirect("uploadFileServlet");
+                } else {
+                    response.sendRedirect("uploadFileServlet?action=viewCart");
+                }
+            }
         } else {
-            
             request.setAttribute("message", "Login faided!");
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/newjsp.jsp");
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/Login.jsp");
             dispatcher.forward(request, response);
-
         }
 
+//        if(cus.getStatus() != 0 || ad.getAdminID() == 1){
+//            if (cus != null) {
+//            request.getSession().setAttribute("auth", cus);
+//            request.setAttribute("auth", cus);
+//            if(home ==1){
+//               response.sendRedirect("uploadFileServlet"); 
+//            }else{
+//                response.sendRedirect("uploadFileServlet?action=viewCart");
+//            }
+//            
+//        } else if(ad != null){
+//            System.out.println("dangnhapadmin");
+//            request.getSession().setAttribute("auth", ad);
+//            request.setAttribute("auth", ad);
+//            if(home ==1){
+//               response.sendRedirect("uploadFileServlet"); 
+//            }else{
+//                response.sendRedirect("uploadFileServlet?action=viewCart");
+//            }
+//           
+//        }
+//        else {
+//            
+//            request.setAttribute("message", "Login faided!");
+//            RequestDispatcher dispatcher = request.getRequestDispatcher("/Login.jsp");
+//            dispatcher.forward(request, response);
+//
+//        }
+//       }else {
+//            request.setAttribute("message", "This account blocked!");
+//            RequestDispatcher dispatcher = request.getRequestDispatcher("/Login.jsp");
+//            dispatcher.forward(request, response);
+//       }
     }
 
     private void logoutCus(HttpServletRequest request, HttpServletResponse response)
@@ -118,7 +182,10 @@ public class LoginController extends HttpServlet {
         request.setAttribute("message", "Logout successfully");
         HttpSession session = request.getSession();
         session.removeAttribute("auth");
-        RequestDispatcher dispatcher = request.getRequestDispatcher("ProductServlet");
+        session.removeAttribute("cart");
+        session.removeAttribute("proChoose");
+        
+        RequestDispatcher dispatcher = request.getRequestDispatcher("uploadFileServlet");
 
         dispatcher.forward(request, response);
 

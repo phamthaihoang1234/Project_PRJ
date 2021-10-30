@@ -19,13 +19,58 @@ public class Bill {
     private String cphone;
     private String cAddress;
     private double total;
+    private double totalPrize;
     private int status;
     private int cid;
-
+    private String ceckbill;
+    
     public Bill() {
     }
 
-    public Bill(int oID, String dateCreate, String cname, String cphone, String cAddress, double total, int status, int cid) {
+    public Bill(int oID, String dateCreate, String cname, String cphone, String cAddress, double total, double totalPrize, int status, int cid, String ceckbill) {
+        this.oID = oID;
+        this.dateCreate = dateCreate;
+        this.cname = cname;
+        this.cphone = cphone;
+        this.cAddress = cAddress;
+        this.total = total;
+        this.totalPrize = totalPrize;
+        this.status = status;
+        this.cid = cid;
+        this.ceckbill = ceckbill;
+    }
+
+    public double getTotalPrize() {
+        return totalPrize;
+    }
+
+    public void setTotalPrize(double totalPrize) {
+        this.totalPrize = totalPrize;
+    }
+
+    public String getCeckbill() {
+        return ceckbill;
+    }
+
+    public void setCeckbill(String ceckbill) {
+        this.ceckbill = ceckbill;
+    }
+    
+
+//    public Bill(int oID, String dateCreate, String cname, String cphone, String cAddress, double total, double totalPrize, int status, int cid) {
+//        this.oID = oID;
+//        this.dateCreate = dateCreate;
+//        this.cname = cname;
+//        this.cphone = cphone;
+//        this.cAddress = cAddress;
+//        this.total = total;
+//        this.totalPrize = totalPrize;
+//        this.status = status;
+//        this.cid = cid;
+//    }
+    
+
+    public Bill(int oID, String dateCreate, String cname, String cphone, String cAddress, double total, int status, int cid,String ceckbill) {
         this.oID = oID;
         this.dateCreate = dateCreate;
         this.cname = cname;
@@ -34,6 +79,7 @@ public class Bill {
         this.total = total;
         this.status = status;
         this.cid = cid;
+        this.ceckbill = ceckbill;
     }
 
     public Bill(String dateCreate, String cname, String cphone, String cAddress, int total, int status, int cid) {

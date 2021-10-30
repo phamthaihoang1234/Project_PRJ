@@ -12,16 +12,18 @@ package model;
 public class BillDetail {
     private int pid;
     private String oID;
+    private String dateCreate;
     private int quantity;
-    private int money;
-    private int total;
+    private double money;
+    private double total;
 
     public BillDetail() {
     }
 
-    public BillDetail(int pid, String oID, int quantity, int money, int total) {
+    public BillDetail(int pid, String oID, String dateCreate, int quantity, double money, double total) {
         this.pid = pid;
         this.oID = oID;
+        this.dateCreate = dateCreate;
         this.quantity = quantity;
         this.money = money;
         this.total = total;
@@ -43,6 +45,14 @@ public class BillDetail {
         this.oID = oID;
     }
 
+    public String getDateCreate() {
+        return dateCreate;
+    }
+
+    public void setDateCreate(String dateCreate) {
+        this.dateCreate = dateCreate;
+    }
+
     public int getQuantity() {
         return quantity;
     }
@@ -51,21 +61,27 @@ public class BillDetail {
         this.quantity = quantity;
     }
 
-    public int getMoney() {
+    public double getMoney() {
         return money;
     }
 
-    public void setMoney(int money) {
+    public void setMoney(double money) {
         this.money = money;
     }
 
-    public int getTotal() {
+    public double getTotal() {
         return total;
     }
 
-    public void setTotal(int total) {
+    public void setTotal(double total) {
         this.total = total;
     }
+
+    
+    
+    
+
+    
     
     
     

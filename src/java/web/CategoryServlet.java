@@ -6,6 +6,7 @@
 package web;
 
 import dao.DAOCtegory;
+import dao.DAOProduct;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
@@ -17,6 +18,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import model.Category;
+import model.Product;
 
 /**
  *
@@ -27,7 +29,7 @@ public class CategoryServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private DAOCtegory daoCate;
-
+    private DAOProduct daoPro = new DAOProduct();
     public void init() {
         daoCate = new DAOCtegory();
     }
@@ -65,6 +67,9 @@ public class CategoryServlet extends HttpServlet {
                 case "view":
                     viewCateg(request, response);
                     break;
+                case "viewProduct":
+                    viewProduct(request, response);
+                    break;    
                 default:
                     listCateg(request, response);
                     break;
@@ -79,6 +84,17 @@ public class CategoryServlet extends HttpServlet {
         List<Category> listCateg = daoCate.getAll();
         request.setAttribute("listCateg", listCateg);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/category/category-list.jsp");
+        dispatcher.forward(request, response);
+    }
+    
+    private void viewProduct(HttpServletRequest request, HttpServletResponse response)
+            throws SQLException, IOException, ServletException {
+        String id = request.getParameter("cid");
+        
+        List<Product> listPro = daoPro.getAllByCateId(id);
+        request.setAttribute("listProd", listPro);
+        request.setAttribute("cate", daoCate.getAll());
+        RequestDispatcher dispatcher = request.getRequestDispatcher("category-home.jsp");
         dispatcher.forward(request, response);
     }
 

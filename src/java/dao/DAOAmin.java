@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import model.Customer;
 
 /**
  *
@@ -29,11 +30,11 @@ public class DAOAmin {
     ResultSet rs = null;
     private static final String INSERT_ADMIN_SQL = "INSERT INTO admin" + "  (username,password) VALUES "
             + " (?, ?);";
-    private static final String SELECT_ADMIN_BY_ID = "select * from admin where adminID =?";
-    private static final String SELECT_ALL_ADMIN = "select * from admin";
-    private static final String DELETE_ADMIN_SQL = "delete from admin where adminID = ?;";
-    private static final String UPDATE_ADMIN_SQL = "update admin set username = ?,password= ? where adminID = ?;";
-
+    private static final String SELECT_ADMIN_BY_ID = "select * from admin where cid =? ORDER BY cid ASC";
+    private static final String SELECT_ALL_ADMIN = "select * from admin ORDER BY cid ASC";
+    private static final String DELETE_ADMIN_SQL = "delete from admin where cid = ?;";
+    private static final String UPDATE_ADMIN_SQL = "update admin set username = ?,password= ? where cid = ?;";
+    private static final String LOGIN_ADMIN = "select * from admin where username =? and password =?;";
     public void insertAdmin(Admin ad) {
 
         try {
@@ -62,6 +63,35 @@ public class DAOAmin {
             e.printStackTrace();
         }
         return false;
+    }
+    
+     public Admin loginAdmin(String username , String password){
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(LOGIN_ADMIN);
+            ps.setString(1, username);
+            ps.setString(2, password);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                int adminID = rs.getInt(1);
+                String usernam = rs.getString(2);
+                String passwor = rs.getString(3);
+                 String isAdmin = rs.getString(4);
+                Admin ad=new Admin(adminID,usernam,passwor,isAdmin);
+               
+               return ad;
+
+
+            }
+            
+
+        } catch (Exception ex) {
+            Logger.getLogger(DAOProduct.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public void updateAdmin(Admin ad) throws SQLException {
@@ -96,8 +126,8 @@ public class DAOAmin {
                 int adminID = rs.getInt(1);
                 String username = rs.getString(2);
                 String password = rs.getString(3);
-                
-                Admin ad=new Admin(adminID,username,password);
+                String isAdmin = rs.getString(4);
+                Admin ad=new Admin(adminID,username,password,isAdmin);
                
                return ad;
 
@@ -126,8 +156,10 @@ public class DAOAmin {
                 int adminID = rs.getInt(1);
                 String username = rs.getString(2);
                 String password = rs.getString(3);
+                String isAdmin = rs.getString(4);
+                Admin ad=new Admin(adminID,username,password,isAdmin);
                 
-                Admin ad=new Admin(adminID,username,password);
+               
                arr.add(ad);
                
 

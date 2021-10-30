@@ -13,7 +13,26 @@ public class Customer {
     private int cid;//int primary key identity(1,1)
     private String  cname,cphone,cAddress,username,password;
     private int status;
+    private String isAdmin;
 
+    public String getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(String isAdmin) {
+        this.isAdmin = isAdmin;
+    }
+
+    public Customer(int cid, String cname, String cphone, String cAddress, String username, String password, int status, String isAdmin) {
+        this.cid = cid;
+        this.cname = cname;
+        this.cphone = cphone;
+        this.cAddress = cAddress;
+        this.username = username;
+        this.password = password;
+        this.status = status;
+        this.isAdmin = isAdmin;
+    }
     public Customer() {
     }
 
@@ -36,13 +55,14 @@ public class Customer {
         this.status = status;
     }
 
-    public Customer(String cname, String cphone, String cAddress, String username, String password, int status) {
+    public Customer(String cname, String cphone, String cAddress, String username, String password, int status , String isAdmin) {
         this.cname = cname;
         this.cphone = cphone;
         this.cAddress = cAddress;
         this.username = username;
         this.password = password;
         this.status = status;
+        this.isAdmin = isAdmin;
     }
     
 

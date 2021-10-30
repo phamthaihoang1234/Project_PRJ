@@ -27,7 +27,7 @@ public class DAOCtegory {
     private static final String INSERT_CATEG_SQL = "INSERT INTO Category" + "  (cateName,status) VALUES "
             + " (?,?);";
     private static final String SELECT_CATEG_BY_ID = "select * from Category where cateID =?";
-    private static final String SELECT_ALL_BILL = "select * from Category";
+    private static final String SELECT_ALL_BILL = "select * from Category ORDER BY cateID ASC";
     private static final String DELETE_CATEG_SQL = "delete from Category where cateID = ?;";
     private static final String UPDATE_CATEG_SQL = "update Category set cateName = ?,status= ? Where cateID=?;";
 

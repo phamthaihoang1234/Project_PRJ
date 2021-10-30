@@ -110,6 +110,11 @@ public class ProductServlet extends HttpServlet {
         number = number + 1;
         return number;
     }
+    int nu =0;
+    private int getBillId(){
+        nu = nu +1;
+        return nu;
+    }
 
     private void checkOut(HttpServletRequest request, HttpServletResponse response)
             throws SQLException, IOException, ServletException {
@@ -122,7 +127,7 @@ public class ProductServlet extends HttpServlet {
         }
         out.print("<h1:soluongcart>"+billCart.size()+"</h1>");
         out.print("<h1:soluongcart>"+quan+"</h1>");
-        Bill bill = new Bill(getId(), String.valueOf(java.time.LocalDateTime.now()), cus.getCname(), cus.getCphone(), cus.getcAddress(), quan, cus.getStatus(), cus.getCid());
+        Bill bill = new Bill(getId(), String.valueOf(java.time.LocalDateTime.now()), cus.getCname(), cus.getCphone(), cus.getcAddress(), quan, cus.getStatus(), cus.getCid(),String.valueOf(getBillId()));
         DAOBill.insertBill(bill);
         request.setAttribute("mess", "Checkout successfully");
         

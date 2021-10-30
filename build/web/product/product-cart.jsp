@@ -27,7 +27,7 @@
     </head>
     <body>
         <c:if test="${auth != null}">
-            <h4 style="color:red;float:right;margin-right: 21px">Hello ${sessionScope.auth.cname}</h4>
+            <h4 style="color:red;float:right;margin-right: 21px">Hello ${sessionScope.auth.username}</h4>
         </c:if>
 
 

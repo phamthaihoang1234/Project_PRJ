@@ -19,8 +19,10 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import model.Product;
 
 /**
  *
@@ -31,17 +33,23 @@ public class DAOBill {
     Connection conn = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
-    private static final String INSERT_BILL_SQL = "INSERT INTO Bill" + "  (dateCreate,cname,cphone,cAddress,total,status,cid,oID) VALUES "
-            + " (?,?, ?, ?, ?, ?, ?, ?);";
-    private static final String SELECT_BILL_BY_ID = "select * from Bill where oID =?;";
-    private static final String SELECT_ALL_BILL = "select * from Bill";
+    private static final String INSERT_BILL_SQL = "INSERT INTO Bill" + "  (dateCreate,cname,cphone,cAddress,total,status,cid,oID,checkbill) VALUES "
+            + " (?,?, ?, ?, ?, ?, ?, ?,?);";
+    private static final String SELECT_BILL_BY_CID = "select * from Bill where cid =?;";
+    private static final String SELECT_BILL_BY_CHECKBILL = "select * from Bill where oID =?;";
+    private static final String SELECT_BILLDETAIL_BY_OID = "select * from BillDetail where oID =?;";
+    private static final String SELECT_ALL_BILL = "select * from Bill ORDER BY oID ASC";
     private static final String DELETE_BILL_SQL = "delete from Bill where oID = ?;";
-    private static final String UPDATE_BILL_SQL = "update Bill set dateCreate = ?,cname= ?,cphone= ?,cAddress= ?,total= ?,status= ? Where oID=?;";
+    private static final String UPDATE_BILL_SQL = "update Bill set dateCreate = ?,cname= ?,cphone= ?,cAddress= ?,total= ?,status= ? ,checkbill=? Where oID=?;";
+    private static final String SEARCH_BILL_BY_NAME = "select * from Bill where cid = ? AND [cname] like ?;";
+    private static final String SEARCH_BILL_BY_NAMEC = "select * from Bill where [cname] like ?;";
+    private static final String COUNT_TOTAL_BILL = "select count(*) from Bill;";
+    private static final String PAGING_BILL = "select * from Bill order by oID OFFSET ? ROWS FETCH NEXT 6 ROWS ONLY;";
 
     public void insertBill(Bill bi) {
 
         try {
-           
+
             conn = new DBContext().getConnection();
             ps = conn.prepareStatement(INSERT_BILL_SQL);
             ps.setString(1, bi.getDateCreate());
@@ -52,17 +60,63 @@ public class DAOBill {
             ps.setInt(6, bi.getStatus());
             ps.setInt(7, bi.getCid());
             ps.setInt(8, bi.getoID());
-
+            ps.setString(9, bi.getCeckbill());
             ps.executeUpdate();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+    
+    public int countBill(){
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(COUNT_TOTAL_BILL);
+           rs = ps.executeQuery();
+           while(rs.next()){
+               return rs.getInt(1);
+           }
+            
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
+    public List<Bill> pagingBill(int in){
+        List<Bill> list = new ArrayList<>();
+         try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(PAGING_BILL);
+            ps.setInt(1, (in - 1)*6);
+            rs = ps.executeQuery();
+            while(rs.next()){
+                int oID = rs.getInt(1);
+                String dateCreate = rs.getString(2);
+                String cname = rs.getString(3);
+                String cphone = rs.getString(4);
+                String cAddress = rs.getString(5);
+                int total = rs.getInt(6);
+                int status = rs.getInt(7);
+                int cid = rs.getInt(8);
+                String checkbill = rs.getString(9);
+
+                Bill bill = new Bill(oID, dateCreate, cname, cphone, cAddress, total, status, cid, checkbill);
+                list.add(bill);
+            }
+            return list;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    } 
 
     public boolean deleteBill(int oid) throws SQLException {
 
         try {
+            
             conn = new DBContext().getConnection();
             ps = conn.prepareStatement(DELETE_BILL_SQL);
             ps.setInt(1, oid);
@@ -77,7 +131,7 @@ public class DAOBill {
 
     public void updateBill(Bill bi) throws SQLException {
         try {
-            
+
             conn = new DBContext().getConnection();
             ps = conn.prepareStatement(UPDATE_BILL_SQL);
 
@@ -87,7 +141,9 @@ public class DAOBill {
             ps.setString(4, bi.getcAddress());
             ps.setDouble(5, bi.getTotal());
             ps.setInt(6, bi.getStatus());
-            ps.setInt(7, bi.getoID());
+            ps.setString(7, bi.getCeckbill());
+
+            ps.setInt(8, bi.getoID());
 
             boolean a = ps.executeUpdate() > 0;
             out.print("<h1>" + a + "</h1>");
@@ -97,14 +153,60 @@ public class DAOBill {
         }
     }
 
-    public Bill getBillDetailById(String id) {
+    public ArrayList<Bill> searchBillByCname(String name, int Cid, String isAdmin) {
+        ArrayList<Bill> arr = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+         System.out.println("Isadmin: "+isAdmin);
+        System.out.println("CIdis: "+Cid);
+        System.out.println("Key: "+name);
+        try {
+            conn = new DBContext().getConnection();
+            if (isAdmin.equals("0")) {
+                System.out.println("vao1");
+                ps = conn.prepareStatement(SEARCH_BILL_BY_NAME);
+                ps.setInt(1, Cid);
+                ps.setString(2, "%" + name + "%");
+            } else {
+                 System.out.println("Khongvao1");
+                ps = conn.prepareStatement(SEARCH_BILL_BY_NAMEC);
+                ps.setString(1, "%" + name + "%");
+            }
 
+            rs = ps.executeQuery();
+            while (rs.next()) {
+
+                int oID = rs.getInt(1);
+                String dateCreate = rs.getString(2);
+                String cname = rs.getString(3);
+                String cphone = rs.getString(4);
+                String cAddress = rs.getString(5);
+                int total = rs.getInt(6);
+                int status = rs.getInt(7);
+                int cid = rs.getInt(8);
+                String checkbill = rs.getString(9);
+
+                Bill bill = new Bill(oID, dateCreate, cname, cphone, cAddress, total, status, cid, checkbill);
+                arr.add(bill);
+
+            }
+            return arr;
+
+        } catch (Exception ex) {
+            Logger.getLogger(DAOProduct.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public ArrayList<Bill> getAllBillByCid(String id) {
+        ArrayList<Bill> arr = new ArrayList<>();
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
             conn = new DBContext().getConnection();
-            ps = conn.prepareStatement(SELECT_BILL_BY_ID);
+            ps = conn.prepareStatement(SELECT_BILL_BY_CID);
             ps.setString(1, id);
             rs = ps.executeQuery();
             while (rs.next()) {
@@ -117,15 +219,46 @@ public class DAOBill {
                 int total = rs.getInt(6);
                 int status = rs.getInt(7);
                 int cid = rs.getInt(8);
-                
+                String checkbill = rs.getString(9);
 
-                Bill bill = new Bill(oID,dateCreate, cname, cphone, cAddress, total, status, cid);
+                Bill bill = new Bill(oID, dateCreate, cname, cphone, cAddress, total, status, cid, checkbill);
+                arr.add(bill);
 
+            }
+            return arr;
+
+        } catch (Exception ex) {
+            Logger.getLogger(DAOProduct.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public Bill getBillDetailById(String id) {
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(SELECT_BILL_BY_CHECKBILL);
+            ps.setString(1, id);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+
+                int oID = rs.getInt(1);
+                String dateCreate = rs.getString(2);
+                String cname = rs.getString(3);
+                String cphone = rs.getString(4);
+                String cAddress = rs.getString(5);
+                int total = rs.getInt(6);
+                int status = rs.getInt(7);
+                int cid = rs.getInt(8);
+                String checkbill = rs.getString(9);
+
+                Bill bill = new Bill(oID, dateCreate, cname, cphone, cAddress, total, status, cid, checkbill);
                 return bill;
 
             }
-
-            rs = ps.executeQuery();
 
         } catch (Exception ex) {
             Logger.getLogger(DAOProduct.class.getName()).log(Level.SEVERE, null, ex);
@@ -135,7 +268,7 @@ public class DAOBill {
 
     public ArrayList<Bill> getAll() {
         ArrayList<Bill> arr = new ArrayList<Bill>();
-        String sql = "select * from Bill";
+        String sql = "select * from Bill ";
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -154,9 +287,9 @@ public class DAOBill {
                 int total = rs.getInt(6);
                 int status = rs.getInt(7);
                 int cid = rs.getInt(8);
-                
+                String checkbill = rs.getString(9);
 
-                Bill bill = new Bill(oID, dateCreate, cname, cphone, cAddress, total, status, cid);
+                Bill bill = new Bill(oID, dateCreate, cname, cphone, cAddress, total, status, cid, checkbill);
                 arr.add(bill);
 
             }

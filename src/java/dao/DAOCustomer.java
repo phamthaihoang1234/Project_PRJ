@@ -25,14 +25,14 @@ public class DAOCustomer {
     Connection conn = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
-    private static final String INSERT_CUSTOMER_SQL = "INSERT INTO Customer" + "  (cname,cphone,cAddress,username,password,status) VALUES "
-            + " (?, ?, ?, ?, ?, ?);";
+    private static final String INSERT_CUSTOMER_SQL = "INSERT INTO Customer" + "  (cname,cphone,cAddress,username,password,status,isAdmin) VALUES "
+            + " (?, ?, ?, ?, ?, ?,?);";
     private static final String SELECT_CUSTOMER_BY_ID = "select * from Customer where cid =?";
     private static final String LOGIN_CUSTOMER = "select * from Customer where username =? and password = ?";
-    private static final String SELECT_ALL_CUSTOMER = "select * from Customer";
+    private static final String SELECT_ALL_CUSTOMER = "select * from Customer ORDER BY cid ASC";
     private static final String DELETE_CUSTOMER_SQL = "delete from Customer where cid = ?;";
-    private static final String UPDATE_CUSTOMER_SQL = "update Customer set cname = ?,cphone= ?, cAddress=?,username=?,password=?,status=? where cid = ?;";
-
+    private static final String UPDATE_CUSTOMER_SQL = "update Customer set cname = ?,cphone= ?, cAddress=?,username=?,password=?,status=? , isAdmin=? where cid = ?;";
+    private static final String SEARCH_CUSTOMER_BY_NAME = "select * from Customer where [cname] like ?;";
     public void insertCustomer(Customer cus) {
 
         try {
@@ -44,12 +44,43 @@ public class DAOCustomer {
             ps.setString(4, cus.getUsername());
             ps.setString(5, cus.getPassword());
             ps.setInt(6, cus.getStatus());
-
+            ps.setString(7, cus.getIsAdmin());
             ps.executeUpdate();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    public ArrayList<Customer> searchCusByName(String name){
+        ArrayList<Customer> arr = new ArrayList<>();
+         Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try{
+            conn = new DBContext().getConnection();
+            ps = conn.prepareStatement(SEARCH_CUSTOMER_BY_NAME);
+            ps.setString(1, "%" + name + "%");
+            rs = ps.executeQuery();
+             while (rs.next()) {
+                 int id = rs.getInt(1);
+                String  cname = rs.getString(2); 
+                String cphone = rs.getString(3);
+                String cAddress = rs.getString(4);
+                String username = rs.getString(5);
+                String password = rs.getString(6);
+                 int status = rs.getInt(7);
+                 String isAdmin = rs.getString(8);
+                Customer cus = new Customer(id,cname, cphone, cAddress, username, password,status,isAdmin);
+                arr.add(cus);
+
+            }
+          return arr;
+            
+        }catch (Exception ex) {
+            Logger.getLogger(DAOProduct.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
     
     public Customer loginCustomer(String username , String password){
@@ -70,8 +101,9 @@ public class DAOCustomer {
                 String username1 = rs.getString(5);
                 String password1 = rs.getString(6);
                 int status = rs.getInt(7);
+                String isAdmin = rs.getString(8);
                 
-                Customer cus = new Customer(Integer.parseInt(id),cname, cphone, cAddress, username, password,status);
+                Customer cus = new Customer(Integer.parseInt(id),cname, cphone, cAddress, username, password,status,isAdmin);
                 return cus;
 
             }
@@ -109,8 +141,9 @@ public class DAOCustomer {
             ps.setString(4, cus.getUsername());
             ps.setString(5, cus.getPassword());
             ps.setInt(6, cus.getStatus());
-            ps.setInt(7, cus.getCid());
-
+            ps.setString(7, cus.getIsAdmin());
+            ps.setInt(8, cus.getCid());
+            
             ps.executeUpdate();
 
         } catch (Exception e) {
@@ -136,8 +169,9 @@ public class DAOCustomer {
                 String username = rs.getString(5);
                 String password = rs.getString(6);
                 int status = rs.getInt(7);
+                String isAdmin = rs.getString(8);
                 
-                Customer cus = new Customer(Integer.parseInt(id),cname, cphone, cAddress, username, password,status);
+                Customer cus = new Customer(Integer.parseInt(id),cname, cphone, cAddress, username, password,status,isAdmin);
                 return cus;
 
             }
@@ -168,7 +202,8 @@ public class DAOCustomer {
                 String username = rs.getString(5);
                 String password = rs.getString(6);
                  int status = rs.getInt(7);
-                Customer cus = new Customer(id,cname, cphone, cAddress, username, password,status);
+                 String isAdmin = rs.getString(8);
+                Customer cus = new Customer(id,cname, cphone, cAddress, username, password,status,isAdmin);
                 arr.add(cus);
 
             }
@@ -177,7 +212,7 @@ public class DAOCustomer {
         } catch (Exception ex) {
             Logger.getLogger(DAOProduct.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return arr;
+        return null;
     }
 
     private Connection getConnection() {

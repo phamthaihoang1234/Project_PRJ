@@ -13,7 +13,23 @@ public class Admin {
     private int adminID;
     private String username;
     private String password;
+    private String isAdmin;
 
+    public Admin(int adminID, String username, String password, String isAdmin) {
+        this.adminID = adminID;
+        this.username = username;
+        this.password = password;
+        this.isAdmin = isAdmin;
+    }
+
+    public String getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(String isAdmin) {
+        this.isAdmin = isAdmin;
+    }
+    
     public Admin() {
     }
 

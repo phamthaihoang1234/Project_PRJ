@@ -15,7 +15,9 @@ public class Product {
     private int quantity;
     private double price;
     private String image, description;
+    
     private int status, cateID;
+    private String path;
 
     public Product() {
     }
@@ -32,6 +34,28 @@ public class Product {
         this.cateID = cateID;
     }
 
+    public Product(String pid, String pname, int quantity, double price, String image, String description, int status, int cateID, String path) {
+        this.pid = pid;
+        this.pname = pname;
+        this.quantity = quantity;
+        this.price = price;
+        this.image = image;
+        this.description = description;
+        this.status = status;
+        this.cateID = cateID;
+        this.path = path;
+    }
+    
+    
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+    
     
     
 

@@ -1,6 +1,7 @@
 
-import dao.DAOAmin;
 import dao.DAOBill;
+import java.util.List;
+import model.Bill;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -14,7 +15,12 @@ import dao.DAOBill;
  */
 public class tesst {
     public static void main(String[] args) {
-         DAOBill daoPro = new DAOBill();
-         System.out.println(daoPro.getBillDetailById("0"));
+     
+          DAOBill dao = new DAOBill();
+         List<Bill> list = dao.pagingBill(3);
+         
+         for (Bill bill : list) {
+             System.out.println(bill.getCname());
+        }
     }
 }
